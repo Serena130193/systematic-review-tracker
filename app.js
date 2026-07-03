@@ -12,7 +12,7 @@ let state = {
 };
 
 // Cloud Database Endpoint (KVDB.io Bucket & Key)
-const DB_URL = "https://corsproxy.io/?https://kvdb.io/SHdLEPg2V5HvhTRvmNXXZ1/sr_tracker_serena130193";
+const DB_URL = "https://corsproxy.io/?url=https://kvdb.io/SHdLEPg2V5HvhTRvmNXXZ1/sr_tracker_serena130193";
 
 // Chart Instances
 let weeklyChartInstance = null;
@@ -615,7 +615,7 @@ async function syncWithCloud(showSuccessAlert = false) {
   }
   
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 5000); // 5s timeout
+  const timeoutId = setTimeout(() => controller.abort(), 8000); // 8s timeout
   
   try {
     const response = await fetch(DB_URL, { signal: controller.signal });
@@ -623,14 +623,18 @@ async function syncWithCloud(showSuccessAlert = false) {
     
     if (response.status === 404) {
       if (statusText) statusText.textContent = "Status: Initializing Cloud Database...";
-      const success = await saveStateToCloud();
-      if (success && statusText) {
-        statusText.textContent = "Status: Connected to Cloud Database (Active)";
-        statusText.style.color = "#0d9488";
+      const result = await saveStateToCloud();
+      if (result.success) {
+        if (statusText) {
+          statusText.textContent = "Status: Connected to Cloud Database (Active)";
+          statusText.style.color = "#0d9488";
+        }
+      } else {
+        throw new Error("Initialization failed: " + result.error);
       }
       return;
     }
-    if (!response.ok) throw new Error("Failed to fetch cloud database.");
+    if (!response.ok) throw new Error("Server responded with HTTP " + response.status);
     
     const cloudState = await response.json();
     if (cloudState && cloudState.settings && cloudState.logs) {
@@ -661,8 +665,12 @@ async function syncWithCloud(showSuccessAlert = false) {
   } catch (err) {
     clearTimeout(timeoutId);
     console.error("Cloud synchronization failed:", err);
+    
+    let errMsg = err.message;
+    if (err.name === 'AbortError') errMsg = "Connection timed out (8 seconds)";
+    
     if (statusText) {
-      statusText.textContent = "Status: Sync Offline (Using Local Cache)";
+      statusText.textContent = "Status: Sync Offline (" + errMsg + ")";
       statusText.style.color = "var(--accent)";
     }
     if (badge) {
@@ -675,14 +683,14 @@ async function syncWithCloud(showSuccessAlert = false) {
       badgeValue.style.color = "#b91c1c";
     }
     if (showSuccessAlert) {
-      alert("Synchronization failed: Using local offline cache.\n" + err.message);
+      alert("Synchronization failed: Using local offline cache.\n" + errMsg);
     }
   }
 }
 
 async function saveStateToCloud() {
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 5000); // 5s timeout
+  const timeoutId = setTimeout(() => controller.abort(), 8000); // 8s timeout
   
   try {
     const response = await fetch(DB_URL, {
@@ -691,10 +699,14 @@ async function saveStateToCloud() {
       body: JSON.stringify(state)
     });
     clearTimeout(timeoutId);
-    return response.ok;
+    if (!response.ok) {
+      return { success: false, error: "HTTP " + response.status };
+    }
+    return { success: true };
   } catch (err) {
     clearTimeout(timeoutId);
-    console.error("Failed to write state updates to cloud database:", err);
-    return false;
+    let errMsg = err.message;
+    if (err.name === 'AbortError') errMsg = "Write timed out";
+    return { success: false, error: errMsg };
   }
 }
