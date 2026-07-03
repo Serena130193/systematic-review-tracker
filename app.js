@@ -12,7 +12,7 @@ let state = {
 };
 
 // Cloud Database Endpoint (KVDB.io Bucket & Key)
-const DB_URL = "https://kvdb.io/SHdLEPg2V5HvhTRvmNXXZ1/sr_tracker_serena130193";
+const DB_URL = "https://corsproxy.io/?https://kvdb.io/SHdLEPg2V5HvhTRvmNXXZ1/sr_tracker_serena130193";
 
 // Chart Instances
 let weeklyChartInstance = null;
