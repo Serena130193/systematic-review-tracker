@@ -12,7 +12,7 @@ let state = {
 };
 
 // Cloud Database Endpoint (KVDB.io Bucket & Key)
-const DB_URL = "https://kvdb.io/8y834r2bN2u7jB92u6jQ1g/sr_tracker_serena130193";
+const DB_URL = "https://kvdb.io/SHdLEPg2V5HvhTRvmNXXZ1/sr_tracker_serena130193";
 
 // Chart Instances
 let weeklyChartInstance = null;
@@ -614,8 +614,13 @@ async function syncWithCloud(showSuccessAlert = false) {
     statusText.style.color = "var(--text-muted)";
   }
   
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 5000); // 5s timeout
+  
   try {
-    const response = await fetch(DB_URL);
+    const response = await fetch(DB_URL, { signal: controller.signal });
+    clearTimeout(timeoutId);
+    
     if (response.status === 404) {
       if (statusText) statusText.textContent = "Status: Initializing Cloud Database...";
       const success = await saveStateToCloud();
@@ -654,6 +659,7 @@ async function syncWithCloud(showSuccessAlert = false) {
       }
     }
   } catch (err) {
+    clearTimeout(timeoutId);
     console.error("Cloud synchronization failed:", err);
     if (statusText) {
       statusText.textContent = "Status: Sync Offline (Using Local Cache)";
@@ -675,16 +681,19 @@ async function syncWithCloud(showSuccessAlert = false) {
 }
 
 async function saveStateToCloud() {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 5000); // 5s timeout
+  
   try {
     const response = await fetch(DB_URL, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
+      signal: controller.signal,
       body: JSON.stringify(state)
     });
+    clearTimeout(timeoutId);
     return response.ok;
   } catch (err) {
+    clearTimeout(timeoutId);
     console.error("Failed to write state updates to cloud database:", err);
     return false;
   }
