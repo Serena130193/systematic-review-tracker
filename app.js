@@ -11,6 +11,9 @@ let state = {
   logs: []
 };
 
+// Cloud Database Endpoint (KVDB.io Bucket & Key)
+const DB_URL = "https://kvdb.io/8y834r2bN2u7jB92u6jQ1g/sr_tracker_serena130193";
+
 // Chart Instances
 let weeklyChartInstance = null;
 let cumulativeChartInstance = null;
@@ -28,18 +31,19 @@ const mockLogs = [
 ];
 
 // Initialize the Application
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
   loadState();
   initLucide();
   initFormSelectors();
-  initWeekOptions(); // Populate dropdown based on start date
+  initWeekOptions();
   initSettingsFormValues();
   initTabNavigation();
   initEventListeners();
-  
-  // Create charts and render views
   initCharts();
   updateUI();
+  
+  // Sync with cloud database in background
+  await syncWithCloud();
 });
 
 // Load state from LocalStorage or initialize with defaults
@@ -68,10 +72,12 @@ function loadState() {
   }
 }
 
-// Save current state to LocalStorage
+// Save state to LocalStorage and trigger background cloud save
 function saveState() {
   localStorage.setItem("systematic_review_dashboard_state", JSON.stringify(state));
+  saveStateToCloud(); // Run asynchronously in the background
 }
+
 
 // Re-initialize Lucide Icons
 function initLucide() {
@@ -99,6 +105,12 @@ function initSettingsFormValues() {
   document.getElementById("setting-due-date").value = state.settings.dueDate || "2026-08-31";
   document.getElementById("setting-reviewer1-name").value = state.settings.reviewer1Name;
   document.getElementById("setting-reviewer2-name").value = state.settings.reviewer2Name;
+  
+  const statusText = document.getElementById("cloud-connection-status");
+  if (statusText) {
+    statusText.textContent = "Status: Connected to Cloud Database (Active)";
+    statusText.style.color = "#0d9488";
+  }
   
   // Update reviewer names in dashboard card displays
   document.getElementById("reviewer1-name-display").textContent = state.settings.reviewer1Name;
@@ -160,6 +172,12 @@ function initEventListeners() {
   
   // Settings Submit Form
   document.getElementById("settings-form").addEventListener("submit", handleSettingsSubmit);
+  
+  // Cloud Database Force Sync Button
+  const syncBtn = document.getElementById("btn-force-sync");
+  if (syncBtn) {
+    syncBtn.addEventListener("click", () => syncWithCloud(true));
+  }
   
   // Export Data Trigger
   document.getElementById("btn-export").addEventListener("click", exportData);
@@ -831,5 +849,96 @@ function formatDateLabel(date) {
   const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   const m = months[date.getMonth()];
   const d = String(date.getDate()).padStart(2, '0');
-  return `${m} ${d}`;
+  return `${m} ${d}`// Cloud database syncing methods
+async function syncWithCloud(showSuccessAlert = false) {
+  const statusText = document.getElementById("cloud-connection-status");
+  const badgeValue = document.getElementById("cloud-badge-value");
+  const badge = document.getElementById("cloud-status-badge");
+  
+  if (statusText) {
+    statusText.textContent = "Status: Syncing with cloud...";
+    statusText.style.color = "var(--text-muted)";
+  }
+  
+  try {
+    const response = await fetch(DB_URL);
+    if (response.status === 404) {
+      // New database setup. Initialize the cloud database with current local state
+      if (statusText) statusText.textContent = "Status: Initializing Cloud Database...";
+      const success = await saveStateToCloud();
+      if (success && statusText) {
+        statusText.textContent = "Status: Connected to Cloud Database (Active)";
+        statusText.style.color = "#0d9488";
+      }
+      return;
+    }
+    if (!response.ok) throw new Error("Failed to fetch cloud database.");
+    
+    const cloudState = await response.json();
+    if (cloudState && cloudState.settings && cloudState.logs) {
+      state = cloudState;
+      
+      // Save locally
+      localStorage.setItem("systematic_review_dashboard_state", JSON.stringify(state));
+      
+      // Hydrate the screen components
+      initFormSelectors();
+      initWeekOptions();
+      initSettingsFormValues();
+      updateUI();
+      
+      if (statusText) {
+        statusText.textContent = "Status: Connected to Cloud Database (Active)";
+        statusText.style.color = "#0d9488";
+      }
+      if (badge) {
+        badge.style.backgroundColor = "#f0fdf4";
+        badge.style.borderColor = "#bbf7d0";
+        badge.style.color = "#166534";
+      }
+      if (badgeValue) {
+        badgeValue.textContent = "Active";
+        badgeValue.style.color = "#15803d";
+      }
+      
+      if (showSuccessAlert) {
+        alert("Dashboard database successfully synchronized with the cloud!");
+      }
+    }
+  } catch (err) {
+    console.error("Cloud synchronization failed:", err);
+    if (statusText) {
+      statusText.textContent = "Status: Sync Offline (Using Local Cache)";
+      statusText.style.color = "var(--accent)";
+    }
+    if (badge) {
+      badge.style.backgroundColor = "#fef2f2";
+      badge.style.borderColor = "#fecaca";
+      badge.style.color = "#991b1b";
+    }
+    if (badgeValue) {
+      badgeValue.textContent = "Offline";
+      badgeValue.style.color = "#b91c1c";
+    }
+    
+    if (showSuccessAlert) {
+      alert("Synchronization failed: Using local offline cache.\n" + err.message);
+    }
+  }
+}
+
+async function saveStateToCloud() {
+  try {
+    const response = await fetch(DB_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(state)
+    });
+    return response.ok;
+  } catch (err) {
+    console.error("Failed to write state updates to cloud database:", err);
+    return false;
+  }
 }
