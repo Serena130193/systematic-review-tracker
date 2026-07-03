@@ -205,13 +205,13 @@ function updateUI() {
   
   let weeksLeftStr = "";
   if (weeksRemaining > 1) {
-    weeksLeftStr = ` • ${weeksRemaining} wks left`;
+    weeksLeftStr = ` ΓÇó ${weeksRemaining} wks left`;
   } else if (weeksRemaining === 1) {
-    weeksLeftStr = ` • 1 wk left`;
+    weeksLeftStr = ` ΓÇó 1 wk left`;
   } else if (weeksRemaining === 0) {
-    weeksLeftStr = ` • Due this week`;
+    weeksLeftStr = ` ΓÇó Due this week`;
   } else {
-    weeksLeftStr = ` • ${Math.abs(weeksRemaining)} wks overdue`;
+    weeksLeftStr = ` ΓÇó ${Math.abs(weeksRemaining)} wks overdue`;
   }
   
   document.getElementById("val-remaining-records").textContent = remainingRecords.toLocaleString();
