@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Systematic Review Progress Dashboard</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Ambient Gradient Background Blobs -->
+  <div class="bg-glow bg-glow-1"></div>
+  <div class="bg-glow bg-glow-2"></div>
+
+  <div class="app-container">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-icon">
+          <i data-lucide="line-chart"></i>
+        </div>
+        <div class="brand-text">
+          <h1>ReviewTracker</h1>
+          <span>Systematic Review</span>
+        </div>
+      </div>
+
+      <nav class="nav-menu">
+        <button class="nav-item active" data-tab="dashboard">
+          <i data-lucide="layout-dashboard"></i>
+          <span>Dashboard</span>
+        </button>
+        <button class="nav-item" data-tab="logs">
+          <i data-lucide="file-text"></i>
+          <span>Weekly Logs</span>
+        </button>
+        <button class="nav-item" data-tab="settings">
+          <i data-lucide="settings"></i>
+          <span>Settings</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <p>Systematic Review Dashboard</p>
+        <span class="version">v1.0.0</span>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      <!-- Top header bar -->
+      <header class="top-bar">
+        <div class="header-title">
+          <h2 id="page-title">Dashboard Overview</h2>
+          <p id="page-subtitle">Track, analyze, and compare reviewer progress</p>
+        </div>
+        <div class="quick-stats">
+          <div class="stat-badge">
+            <span class="badge-label">Active Reviewers:</span>
+            <span class="badge-val" id="active-reviewer-count">2</span>
+          </div>
+          <button class="btn btn-primary" onclick="switchTab('logs')">
+            <i data-lucide="plus"></i>
+            <span>Log Progress</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- Content Views -->
+      <div class="view-container">
+        
+        <!-- DASHBOARD TAB -->
+        <section id="tab-dashboard" class="tab-view active">
+          <!-- Overview Key Metrics Grid -->
+          <div class="metrics-grid">
+            <div class="card metric-card">
+              <div class="card-icon c-indigo">
+                <i data-lucide="check-square"></i>
+              </div>
+              <div class="metric-data">
+                <h3>Total Screened</h3>
+                <div class="metric-value" id="val-total-screened">0</div>
+                <div class="metric-desc" id="desc-total-screened">0% of target pool</div>
+              </div>
+            </div>
+
+            <div class="card metric-card">
+              <div class="card-icon c-teal">
+                <i data-lucide="database"></i>
+              </div>
+              <div class="metric-data">
+                <h3>Total Records</h3>
+                <div class="metric-value" id="val-total-records">0</div>
+                <div class="metric-desc">Available items to screen</div>
+              </div>
+            </div>
+
+            <div class="card metric-card">
+              <div class="card-icon c-amber">
+                <i data-lucide="hourglass"></i>
+              </div>
+              <div class="metric-data">
+                <h3>Remaining Records</h3>
+                <div class="metric-value" id="val-remaining-records">0</div>
+                <div class="metric-desc" id="desc-remaining-records">0% left to screen</div>
+              </div>
+            </div>
+
+            <div class="card metric-card">
+              <div class="card-icon c-rose">
+                <i data-lucide="trending-up"></i>
+              </div>
+              <div class="metric-data">
+                <h3>Weekly Velocity</h3>
+                <div class="metric-value" id="val-weekly-velocity">0</div>
+                <div class="metric-desc" id="desc-weekly-velocity">Articles / week avg</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Progress Completion Bar Card -->
+          <div class="card progress-overview-card">
+            <div class="progress-info">
+              <span>Overall Screening Completion</span>
+              <span id="txt-completion-pct">0%</span>
+            </div>
+            <div class="progress-bar-container">
+              <div class="progress-bar" id="bar-completion-pct" style="width: 0%"></div>
+            </div>
+          </div>
+
+          <!-- Reviewer Comparison Area -->
+          <div class="reviewer-section-title">
+            <h3>Reviewer Comparison</h3>
+            <p>Title and abstract screening individual logs</p>
+          </div>
+
+          <div class="reviewers-grid">
+            <!-- Reviewer 1 Card -->
+            <div class="card reviewer-card" id="card-reviewer-1">
+              <div class="reviewer-header">
+                <div class="reviewer-info">
+                  <h4 id="reviewer1-name-display">Reviewer 1</h4>
+                  <span>Assigned Reviewer</span>
+                </div>
+                <div class="reviewer-badge">Active</div>
+              </div>
+              <div class="reviewer-stats">
+                <div class="r-stat">
+                  <span class="label">Screened</span>
+                  <span class="value" id="val-r1-screened">0</span>
+                </div>
+                <div class="r-stat">
+                  <span class="label">Completion</span>
+                  <span class="value" id="val-r1-pct">0%</span>
+                </div>
+                <div class="r-stat">
+                  <span class="label">Weekly Avg</span>
+                  <span class="value" id="val-r1-avg">0</span>
+                </div>
+              </div>
+              <div class="progress-bar-container small">
+                <div class="progress-bar c-indigo" id="bar-r1-pct" style="width: 0%"></div>
+              </div>
+            </div>
+
+            <!-- Reviewer 2 Card -->
+            <div class="card reviewer-card" id="card-reviewer-2">
+              <div class="reviewer-header">
+                <div class="reviewer-info">
+                  <h4 id="reviewer2-name-display">Reviewer 2</h4>
+                  <span>Assigned Reviewer</span>
+                </div>
+                <div class="reviewer-badge">Active</div>
+              </div>
+              <div class="reviewer-stats">
+                <div class="r-stat">
+                  <span class="label">Screened</span>
+                  <span class="value" id="val-r2-screened">0</span>
+                </div>
+                <div class="r-stat">
+                  <span class="label">Completion</span>
+                  <span class="value" id="val-r2-pct">0%</span>
+                </div>
+                <div class="r-stat">
+                  <span class="label">Weekly Avg</span>
+                  <span class="value" id="val-r2-avg">0</span>
+                </div>
+              </div>
+              <div class="progress-bar-container small">
+                <div class="progress-bar c-teal" id="bar-r2-pct" style="width: 0%"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Charts Area -->
+          <div class="charts-grid">
+            <div class="card chart-card">
+              <div class="chart-header">
+                <div class="chart-title">
+                  <h4>Weekly Screening Velocity</h4>
+                  <span>Number of articles screened per week</span>
+                </div>
+                <i data-lucide="bar-chart-3" class="text-secondary"></i>
+              </div>
+              <div class="chart-body">
+                <canvas id="weeklyVelocityChart"></canvas>
+              </div>
+            </div>
+
+            <div class="card chart-card">
+              <div class="chart-header">
+                <div class="chart-title">
+                  <h4>Cumulative Progress Timeline</h4>
+                  <span>Total screened articles vs. available records pool</span>
+                </div>
+                <i data-lucide="milestone" class="text-secondary"></i>
+              </div>
+              <div class="chart-body">
+                <canvas id="cumulativeProgressChart"></canvas>
+              </div>
+            </div>
+          </div>
+        </section>
+
+
+        <!-- LOGS TAB -->
+        <section id="tab-logs" class="tab-view">
+          <div class="logs-container">
+            <!-- Add Log Form Card -->
+            <div class="card log-form-card">
+              <div class="card-header-simple">
+                <h3>Log Weekly Progress</h3>
+                <p>Record the number of articles screened by a reviewer for a specific week</p>
+              </div>
+              
+              <form id="log-form" class="log-form">
+                <input type="hidden" id="edit-log-id">
+                
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="log-reviewer">Reviewer</label>
+                    <div class="select-wrapper">
+                      <select id="log-reviewer" required>
+                        <!-- Options filled by JS based on Settings -->
+                      </select>
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="log-week">Week / Date Range</label>
+                    <div class="select-wrapper">
+                      <select id="log-week" required>
+                        <!-- Dynamic week ranges generated by JS -->
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="log-screened">Articles Screened This Week</label>
+                    <input type="number" id="log-screened" min="0" placeholder="e.g. 150" required>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="log-notes">Comments / Notes (Optional)</label>
+                    <input type="text" id="log-notes" placeholder="e.g. database search complete, duplicates removed">
+                  </div>
+                </div>
+
+                <div class="form-actions">
+                  <button type="button" class="btn btn-secondary" id="btn-cancel-edit" style="display: none;">Cancel Edit</button>
+                  <button type="submit" class="btn btn-primary" id="btn-submit-log">
+                    <i data-lucide="plus-circle"></i>
+                    <span id="btn-submit-text">Add Log Entry</span>
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            <!-- Existing Logs Table Card -->
+            <div class="card logs-table-card">
+              <div class="card-header-simple">
+                <h3>History Logs</h3>
+                <p>Review and manage all submitted weekly screening updates</p>
+              </div>
+              <div class="table-responsive">
+                <table class="logs-table">
+                  <thead>
+                    <tr>
+                      <th>Week</th>
+                      <th>Reviewer</th>
+                      <th>Articles Screened</th>
+                      <th>Notes</th>
+                      <th class="actions-col">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="logs-table-body">
+                    <!-- Logs dynamically loaded here -->
+                  </tbody>
+                </table>
+                <div class="empty-state" id="logs-empty-state">
+                  <i data-lucide="folder-open"></i>
+                  <h4>No logs recorded yet</h4>
+                  <p>Submit weekly progress in the form above to populate history.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+
+        <!-- SETTINGS TAB -->
+        <section id="tab-settings" class="tab-view">
+          <div class="settings-container">
+            <!-- Project Configuration Card -->
+            <div class="card settings-card">
+              <div class="card-header-simple">
+                <h3>Project Settings</h3>
+                <p>Configure details of your systematic review</p>
+              </div>
+
+              <form id="settings-form" class="settings-form">
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="setting-total-records">Total Available Records to Screen</label>
+                    <input type="number" id="setting-total-records" min="1" placeholder="e.g. 5000" required>
+                    <span class="help-text">The total deduplicated articles identified from database searches.</span>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="setting-weekly-target">Expected Weekly Target (Per Reviewer)</label>
+                    <input type="number" id="setting-weekly-target" min="1" placeholder="e.g. 300" required>
+                    <span class="help-text">The number of articles expected to be screened by each reviewer weekly.</span>
+                  </div>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="setting-start-date">Project Start Date</label>
+                    <input type="date" id="setting-start-date" required>
+                    <span class="help-text">Date when the screening stage begins.</span>
+                  </div>
+                  <div class="form-group">
+                    <label for="setting-due-date">Project Due Date (Target Completion)</label>
+                    <input type="date" id="setting-due-date" required>
+                    <span class="help-text">Target deadline. Determines the timeline week span.</span>
+                  </div>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="setting-reviewer1-name">Reviewer 1 Name</label>
+                    <input type="text" id="setting-reviewer1-name" placeholder="e.g. Dr. Jane Smith" required>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="setting-reviewer2-name">Reviewer 2 Name</label>
+                    <input type="text" id="setting-reviewer2-name" placeholder="e.g. Prof. John Doe" required>
+                  </div>
+                </div>
+
+                <div class="form-actions">
+                  <button type="submit" class="btn btn-primary">
+                    <i data-lucide="save"></i>
+                    <span>Save Project Config</span>
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            <!-- Import / Export Data Card -->
+            <div class="card settings-card">
+              <div class="card-header-simple">
+                <h3>Data Sync & Backup</h3>
+                <p>Transfer data between reviewers or download backups of your progress</p>
+              </div>
+              <div class="sync-actions-grid">
+                <div class="sync-action-box">
+                  <div class="action-info">
+                    <h4>Export Tracker Data</h4>
+                    <p>Download a file containing all your reviewers, logs, and settings to share or save.</p>
+                  </div>
+                  <button class="btn btn-secondary-glow" id="btn-export">
+                    <i data-lucide="download"></i>
+                    <span>Export JSON</span>
+                  </button>
+                </div>
+
+                <div class="sync-action-box">
+                  <div class="action-info">
+                    <h4>Import Tracker Data</h4>
+                    <p>Load settings and logs from a previously exported database file.</p>
+                  </div>
+                  <div class="file-upload-wrapper">
+                    <input type="file" id="import-file-input" accept=".json" style="display: none;">
+                    <button class="btn btn-secondary-glow" id="btn-trigger-import">
+                      <i data-lucide="upload"></i>
+                      <span>Select & Import JSON</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Online Hosting Instructions Card -->
+            <div class="card settings-card highlight-card">
+              <div class="card-header-simple">
+                <h3>Publish Online & Share Link</h3>
+                <p>How to make this dashboard accessible to your long-distance team members for free:</p>
+              </div>
+              <div class="hosting-steps">
+                <div class="step-item">
+                  <div class="step-num">1</div>
+                  <div class="step-content">
+                    <h4>Host on GitHub Pages (Recommended)</h4>
+                    <p>Put this project folder on a GitHub repository, go to <strong>Settings -> Pages</strong>, and select your branch. GitHub will give you a free public link (e.g. <code>https://username.github.io/repo-name/</code>) that anyone can visit.</p>
+                  </div>
+                </div>
+                <div class="step-item">
+                  <div class="step-num">2</div>
+                  <div class="step-content">
+                    <h4>Host on Vercel or Netlify</h4>
+                    <p>Drag and drop this project folder onto <a href="https://netlify.com" target="_blank">netlify.com</a> or import the GitHub repo to Vercel for free deployment in 10 seconds.</p>
+                  </div>
+                </div>
+                <div class="step-item">
+                  <div class="step-num">3</div>
+                  <div class="step-content">
+                    <h4>Sharing Progress</h4>
+                    <p>Reviewers can keep their dashboards updated by entering logs, and using the <strong>Export JSON</strong> button to send a backup file. The other teammate simply imports it, maintaining perfect alignment.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
